@@ -2,14 +2,14 @@
   <div class="game">
     <h1>Idle Bots</h1>
 
-    Materials: {{ materials.toString() }}
-    ({{ rate.toString() }}/s)
+    Materials: {{ materials.gte(1000000) ? materials.toPrecision(3) : materials.toString() }}
+    ({{ rate.gte(1000000) ? rate.toPrecision(3) : rate.toString() }}/s)
 
     <div v-for="bot in bots" :key="bot.name" class="bot">
       {{ bot.owned.toString() }} {{ bot.name }}
       <div>
         <button @click="buy(bot)" :disabled="materials.lt(bot.cost)">Buy 1 ({{ bot.cost }})</button>
-        <button @click="buy(bot)" :disabled="materials.lt(bot.cost)">Buy Max</button>
+        <button @click="buyMax(bot)" :disabled="materials.lt(bot.cost)">Buy Max</button>
       </div>
     </div>
 
@@ -23,11 +23,13 @@ export default {
   name: 'game',
   data () {
     return {
-      materials: new Big(100),
-      rate: new Big(0),
+      materials: Big(9000),
+      rate: Big(0),
       bots: [
-        { name: 'Nanobots', owned: new Big(0), cost: 100, generates: 1 },
-        { name: 'Minibots', owned: new Big(0), cost: 1000, generates: 10 }
+        { name: 'Nanobots', owned: Big(0), cost: 100, generates: 1 },
+        { name: 'Minibots', owned: Big(0), cost: 1000, generates: 10 },
+        { name: 'Just, you know, bots', owned: Big(0), cost: 10000, generates: 100 },
+        { name: 'Megabots', owned: Big(0), cost: 100000, generates: 1000 }
       ]
     }
   },
@@ -44,9 +46,15 @@ export default {
     buy: function (b) {
       this.materials = this.materials.minus(b.cost)
       b.owned = b.owned.plus(1)
+    },
+    buyMax: function (b) {
+      const max = this.materials.div(b.cost).round(0, 0)
+      this.materials = this.materials.minus(max.times(b.cost))
+      b.owned = b.owned.plus(max)
     }
   },
   created: function () {
+    Big.PE = 6
     this.tick()
   }
 }
