@@ -12,12 +12,13 @@
         <button @click="buyMax(bot)" :disabled="materials.lt(bot.cost)">Buy Max</button>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
 import Big from 'big.js'
+
+const sleep = 100
 
 export default {
   name: 'game',
@@ -25,6 +26,7 @@ export default {
     return {
       materials: Big(9000),
       rate: Big(0),
+      ticker: 0,
       bots: [
         { name: 'Nanobots', owned: Big(0), cost: 100, generates: 1 },
         { name: 'Minibots', owned: Big(0), cost: 1000, generates: 10 },
@@ -35,7 +37,8 @@ export default {
   },
   methods: {
     tick: function () {
-      const sleep = 100
+      this.ticker++
+      if (this.ticker % 10 === 0) this.save()
       const before = this.materials
       for (const bot of this.bots) {
         this.materials = this.materials.plus(bot.owned.times(bot.generates))
@@ -51,10 +54,26 @@ export default {
       const max = this.materials.div(b.cost).round(0, 0)
       this.materials = this.materials.minus(max.times(b.cost))
       b.owned = b.owned.plus(max)
+    },
+    save: function () {
+      window.localStorage.setItem('save', JSON.stringify({
+        materials: this.materials,
+        bots: this.bots.map(b => b.owned)
+      }))
+    },
+    load: function () {
+      const saved = JSON.parse(window.localStorage.getItem('save'))
+      if (saved == null) return
+      this.materials = Big(saved.materials)
+      for (let [index, value] of saved.bots.entries()) {
+        this.bots[index].owned = Big(value)
+      }
     }
   },
   created: function () {
     Big.PE = 6
+    this.load()
+    window.addEventListener('beforeunload', this.save, false)
     this.tick()
   }
 }
