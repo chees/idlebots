@@ -6,8 +6,11 @@
     ({{ rate.gte(1000000) ? rate.toPrecision(3) : rate.toString() }}/s)
 
     <div v-for="bot in bots" :key="bot.name" class="bot">
-      {{ bot.owned.toString() }} {{ bot.name }}
-      <div>
+      <div class="desc">
+        {{ bot.owned.toString() }} {{ bot.name }}
+        <button>Upgrade</button>
+      </div>
+      <div class="buy">
         <button @click="buy(bot)" :disabled="materials.lt(bot.cost)">Buy 1 ({{ bot.cost }})</button>
         <button @click="buyMax(bot)" :disabled="materials.lt(bot.cost)">Buy Max</button>
       </div>
@@ -89,16 +92,35 @@ export default {
 </script>
 
 <style scoped>
+button {
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  background-color: #ddd;
+  padding: 10px;
+}
+
 .game {
   margin: 0 10px;
 }
 
 .bot {
+  margin: 5px 0;
+  padding: 5px;
+  border-left: 1px solid #333;
+  border-right: 1px solid #333;
+  border-radius: 10px;
+}
+.desc, .buy {
   display: flex;
   justify-content: space-between;
+  line-height: 35px;
+}
+.buy button {
+  width: 50%;
+  margin: 5px 0;
+}
+.buy button:last-child {
+  margin-left: 5px;
 }
 
-button {
-  border: 1px solid green;
-}
 </style>
