@@ -12,6 +12,8 @@
         <button @click="buyMax(bot)" :disabled="materials.lt(bot.cost)">Buy Max</button>
       </div>
     </div>
+
+    <button @click="reset">Reset</button>
   </div>
 </template>
 
@@ -24,7 +26,7 @@ export default {
   name: 'game',
   data () {
     return {
-      materials: Big(9000),
+      materials: Big(100),
       rate: Big(0),
       ticker: 0,
       bots: [
@@ -67,6 +69,13 @@ export default {
       this.materials = Big(saved.materials)
       for (let [index, value] of saved.bots.entries()) {
         this.bots[index].owned = Big(value)
+      }
+    },
+    reset: function () {
+      this.materials = Big(100)
+      this.ticket = 0
+      for (const bot of this.bots) {
+        bot.owned = Big(0)
       }
     }
   },
