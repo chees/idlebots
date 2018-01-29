@@ -13,7 +13,8 @@ export default {
 
 <style>
 body {
-  margin: 0;
+  margin: 0 auto;
+  max-width: 600px;
 }
 
 #app {
