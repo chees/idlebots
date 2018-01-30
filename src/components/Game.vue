@@ -2,12 +2,12 @@
   <div class="game">
     <h1>Idle Bots</h1>
 
-    Materials: {{ materials.gte(1000000) ? materials.toPrecision(3) : materials.toString() }}
-    ({{ rate.gte(1000000) ? rate.toPrecision(3) : rate.toString() }}/s)
+    Materials: {{ show(materials) }}
+    ({{ show(rate) }}/s)
 
     <div v-for="bot in bots" :key="bot.name" class="bot">
       <div class="desc">
-        {{ bot.owned.toString() }} {{ bot.name }}
+        {{ show(bot.owned) }} {{ bot.name }}
         <button>Upgrade</button>
       </div>
       <div class="buy">
@@ -80,6 +80,9 @@ export default {
       for (const bot of this.bots) {
         bot.owned = Big(0)
       }
+    },
+    show: function (big) {
+      return big.gte(1000000) ? big.toPrecision(3) : big.toString()
     }
   },
   created: function () {
