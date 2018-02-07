@@ -8,15 +8,25 @@
     <div v-for="(bot, index) in bots" :key="bot.name" class="bot" v-if="isUnlocked(index)">
       <div class="desc">
         {{ show(bot.owned) }} {{ bot.name }}
-        <button>Upgrade</button>
+        <button v-if="canUpgrade(bot)">Upgrade</button>
       </div>
-      <div class="buy">
-        <button @click="buy(bot)" :disabled="materials.lt(bot.cost)">Buy 1 ({{ bot.cost }})</button>
-        <button @click="buyMax(bot)" :disabled="materials.lt(bot.cost)">Buy Max</button>
+      <div class="build">
+        <button @click="build(bot)" :disabled="materials.lt(bot.cost)">Build 1 ({{ bot.cost }})</button>
+        <button @click="buildMax(bot)" :disabled="materials.lt(bot.cost)">Build max: {{ show(materials.div(bot.cost).round(0, 0)) }}</button>
       </div>
     </div>
 
-    <button @click="reset">Reset</button>
+    <button @click="reset" style="position:fixed; top:5px; right:5px">Reset</button>
+
+    <transition name="fade">
+      <div class="dialog" v-if="state=='start'">
+        <div class="content">
+          Build some nanobots!<br>
+          <br>
+          <button @click="state = 'started'">Yes!</button>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -33,6 +43,7 @@ export default {
       rate: Big(0),
       ticker: 0,
       prevTick: new Date(),
+      state: 'start',
       bots: [
         { name: 'Nanobots', owned: Big(0), cost: 100, generates: 1 },
         { name: 'Minibots', owned: Big(0), cost: 1000, generates: 10 },
@@ -42,6 +53,16 @@ export default {
     }
   },
   methods: {
+    reset: function () {
+      this.materials = Big(100)
+      this.rate = Big(0)
+      this.ticker = 0
+      this.prevTick = new Date()
+      this.state = 'start'
+      for (const bot of this.bots) {
+        bot.owned = Big(0)
+      }
+    },
     tick: function () {
       const now = new Date()
       const ticks = Math.floor((now - this.prevTick) / sleep)
@@ -59,11 +80,11 @@ export default {
 
       setTimeout(this.tick, sleep)
     },
-    buy: function (b) {
+    build: function (b) {
       this.materials = this.materials.minus(b.cost)
       b.owned = b.owned.plus(1)
     },
-    buyMax: function (b) {
+    buildMax: function (b) {
       const max = this.materials.div(b.cost).round(0, 0)
       this.materials = this.materials.minus(max.times(b.cost))
       b.owned = b.owned.plus(max)
@@ -72,6 +93,7 @@ export default {
       window.localStorage.setItem('save', JSON.stringify({
         materials: this.materials,
         prevTick: this.prevTick,
+        state: this.state,
         bots: this.bots.map(b => b.owned)
       }))
     },
@@ -81,17 +103,9 @@ export default {
 
       this.materials = Big(saved.materials)
       this.prevTick = new Date(saved.prevTick)
+      this.state = saved.state
       for (let [index, value] of saved.bots.entries()) {
         this.bots[index].owned = Big(value)
-      }
-    },
-    reset: function () {
-      this.materials = Big(100)
-      this.rate = Big(0)
-      this.ticker = 0
-      this.prevTick = new Date()
-      for (const bot of this.bots) {
-        bot.owned = Big(0)
       }
     },
     show: function (big) {
@@ -100,6 +114,10 @@ export default {
     isUnlocked: function (index) {
       if (index === 0) return true
       return this.bots[index - 1].owned.gte(10)
+    },
+    canUpgrade: function (bot) {
+      // TODO
+      return false
     }
   },
   created: function () {
@@ -131,17 +149,48 @@ button {
   border-right: 1px solid #333;
   border-radius: 10px;
 }
-.desc, .buy {
+.desc, .build {
   display: flex;
   justify-content: space-between;
   line-height: 35px;
 }
-.buy button {
+.build button {
   width: 50%;
   margin: 5px 0;
 }
-.buy button:last-child {
+.build button:last-child {
   margin-left: 5px;
+}
+
+.dialog {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, .8);
+}
+.dialog .content {
+  background-color: white;
+  color: #333;
+  padding: 20px;
+  margin: auto;
+  max-width: 200px;
+  border-radius: 10px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.4s ease-out;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+.fade-enter-active .content, .fade-leave-active .content {
+  transition: transform 0.1s ease-in;
+}
+.fade-enter .content, .fade-leave-to .content {
+  transform: scale(0)
 }
 
 </style>
