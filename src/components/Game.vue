@@ -5,16 +5,18 @@
     Materials: {{ show(materials) }}
     ({{ show(rate) }}/s)
 
-    <div v-for="(bot, index) in bots" :key="bot.name" class="bot" v-if="isUnlocked(index)">
-      <div class="desc">
-        {{ show(bot.owned) }} {{ bot.name }}
-        <button v-if="canUpgrade(bot)">Upgrade</button>
+    <transition-group name="slide">
+      <div v-for="(bot, index) in bots" :key="bot.name" class="bot" v-if="isUnlocked(index)">
+        <div class="desc">
+          {{ show(bot.owned) }} {{ bot.name }}
+          <button v-if="canUpgrade(bot)">Upgrade</button>
+        </div>
+        <div class="build">
+          <button @click="build(bot)" :disabled="materials.lt(bot.cost)">Build 1 ({{ bot.cost }})</button>
+          <button @click="buildMax(bot)" :disabled="materials.lt(bot.cost)">Build max: {{ show(materials.div(bot.cost).round(0, 0)) }}</button>
+        </div>
       </div>
-      <div class="build">
-        <button @click="build(bot)" :disabled="materials.lt(bot.cost)">Build 1 ({{ bot.cost }})</button>
-        <button @click="buildMax(bot)" :disabled="materials.lt(bot.cost)">Build max: {{ show(materials.div(bot.cost).round(0, 0)) }}</button>
-      </div>
-    </div>
+    </transition-group>
 
     <button @click="reset" style="position:fixed; top:5px; right:5px">Reset</button>
 
@@ -45,7 +47,7 @@ export default {
       prevTick: new Date(),
       state: 'start',
       bots: [
-        { name: 'Nanobots', owned: Big(0), cost: 100, generates: 1 },
+        { name: 'Nanobots', owned: Big(0), cost: 100, generates: 10 },
         { name: 'Minibots', owned: Big(0), cost: 1000, generates: 10 },
         { name: 'Just, you know, bots', owned: Big(0), cost: 10000, generates: 100 },
         { name: 'Megabots', owned: Big(0), cost: 100000, generates: 1000 }
@@ -193,4 +195,10 @@ button {
   transform: scale(0)
 }
 
+.slide-enter-active, .slide-leave-active {
+  transition: transform 1s ease-in-out;
+}
+.slide-enter, .slide-leave-to {
+  transform: scaleY(0)
+}
 </style>
