@@ -5,7 +5,7 @@
     Materials: {{ show(materials) }}
     ({{ show(rate) }}/s)
 
-    <div v-for="bot in bots" :key="bot.name" class="bot">
+    <div v-for="(bot, index) in bots" :key="bot.name" class="bot" v-if="isUnlocked(index)">
       <div class="desc">
         {{ show(bot.owned) }} {{ bot.name }}
         <button>Upgrade</button>
@@ -96,6 +96,10 @@ export default {
     },
     show: function (big) {
       return big.gte(1000000) ? big.toPrecision(3) : big.toString()
+    },
+    isUnlocked: function (index) {
+      if (index === 0) return true
+      return this.bots[index - 1].owned.gte(10)
     }
   },
   created: function () {
