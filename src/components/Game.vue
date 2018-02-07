@@ -47,8 +47,8 @@ export default {
       prevTick: new Date(),
       state: 'start',
       bots: [
-        { name: 'Nanobots', owned: Big(0), cost: 100, generates: 10 },
-        { name: 'Minibots', owned: Big(0), cost: 1000, generates: 10 },
+        { name: 'Nanobots', owned: Big(0), cost: 100, generates: 1 },
+        { name: 'Minibotsers', owned: Big(0), cost: 1000, generates: 10 },
         { name: 'Just, you know, bots', owned: Big(0), cost: 10000, generates: 100 },
         { name: 'Megabots', owned: Big(0), cost: 100000, generates: 1000 }
       ]
