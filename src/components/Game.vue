@@ -32,6 +32,7 @@ export default {
       materials: Big(100),
       rate: Big(0),
       ticker: 0,
+      prevTick: new Date(),
       bots: [
         { name: 'Nanobots', owned: Big(0), cost: 100, generates: 1 },
         { name: 'Minibots', owned: Big(0), cost: 1000, generates: 10 },
@@ -42,13 +43,20 @@ export default {
   },
   methods: {
     tick: function () {
-      this.ticker++
-      if (this.ticker % 10 === 0) this.save()
-      const before = this.materials
-      for (const bot of this.bots) {
-        this.materials = this.materials.plus(bot.owned.times(bot.generates))
+      const now = new Date()
+      const ticks = Math.floor((now - this.prevTick) / sleep)
+      for (let i = 0; i < ticks; i++) {
+        const before = this.materials
+        for (const bot of this.bots) {
+          this.materials = this.materials.plus(bot.owned.times(bot.generates))
+        }
+        this.rate = this.materials.minus(before).times(1000 / sleep)
       }
-      this.rate = this.materials.minus(before).times(1000 / sleep)
+      this.prevTick = now
+
+      this.ticker += ticks
+      if (this.ticker % 10 === 0) this.save()
+
       setTimeout(this.tick, sleep)
     },
     buy: function (b) {
@@ -63,20 +71,25 @@ export default {
     save: function () {
       window.localStorage.setItem('save', JSON.stringify({
         materials: this.materials,
+        prevTick: this.prevTick,
         bots: this.bots.map(b => b.owned)
       }))
     },
     load: function () {
       const saved = JSON.parse(window.localStorage.getItem('save'))
       if (saved == null) return
+
       this.materials = Big(saved.materials)
+      this.prevTick = new Date(saved.prevTick)
       for (let [index, value] of saved.bots.entries()) {
         this.bots[index].owned = Big(value)
       }
     },
     reset: function () {
       this.materials = Big(100)
-      this.ticket = 0
+      this.rate = Big(0)
+      this.ticker = 0
+      this.prevTick = new Date()
       for (const bot of this.bots) {
         bot.owned = Big(0)
       }
