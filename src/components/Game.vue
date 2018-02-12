@@ -67,7 +67,9 @@ export default {
     },
     tick: function () {
       const now = new Date()
-      const ticks = Math.floor((now - this.prevTick) / sleep)
+      // FIXME limited to 1000 max ticks to prevent infinitish loops on load:
+      const ticks = Math.min(Math.floor((now - this.prevTick) / sleep), 1000)
+      if (ticks > 1) console.log('ticks', ticks)
       for (let i = 0; i < ticks; i++) {
         const before = this.materials
         for (const bot of this.bots) {
